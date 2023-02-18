@@ -1,8 +1,10 @@
 from fastapi import FastAPI
 
+from server.config.factory import settings
+
 app = FastAPI()
 
 
 @app.get("/")
 async def index():
-    return {"message": "fastapi-MongoDB"}
+    return settings
