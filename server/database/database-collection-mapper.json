@@ -1,0 +1,10 @@
+{
+    "databases": [
+        {
+            "name": "enigma",
+            "collections": [
+                "server.models.user.User"
+            ]
+        }
+    ]
+}
