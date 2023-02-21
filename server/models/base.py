@@ -15,19 +15,19 @@ class BaseDocument(BaseModel):
         json_encoders: dict = {datetime: format_datetime_into_isoformat}
 
 
-class BaseRequest(BaseModel):
+class BaseAPI(BaseModel):
+    class Config:
+        allow_population_by_field_name: bool = True
+        alias_generator: Any = format_dict_key_to_camel_case
+
+
+class BaseRequest(BaseAPI):
     class Config:
         extra = Extra.forbid
-        allow_population_by_field_name: bool = True
-        alias_generator: Any = format_dict_key_to_camel_case
 
 
-class BaseResponse(BaseModel):
+class BaseResponse(BaseAPI):
     id: str
-
-    class Config:
-        allow_population_by_field_name: bool = True
-        alias_generator: Any = format_dict_key_to_camel_case
 
     @validator("id", pre=True)
     def convert_id(cls, v):
