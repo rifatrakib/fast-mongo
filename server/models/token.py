@@ -1,14 +1,11 @@
 from datetime import datetime
 
-from pydantic import EmailStr
+from server.models.base import BaseResponse
+from server.models.user import UserBase
 
-from server.models.base import BaseAPI
 
-
-class JWTData(BaseAPI):
-    id: int
-    username: str
-    email: EmailStr
+class JWTData(BaseResponse, UserBase):
+    pass
 
 
 class JWToken(JWTData):
