@@ -1,4 +1,5 @@
 from datetime import datetime
+from importlib import import_module
 from typing import Any, List
 
 from pydantic import BaseModel, Extra, validator
@@ -34,10 +35,17 @@ class BaseResponse(BaseAPI):
         return str(v)
 
 
-class DatabaseMapper(BaseModel):
+class MapperSchema(BaseModel):
     name: str
     collections: List[str]
 
-
-class MapperSchema(BaseModel):
-    databases: List[DatabaseMapper]
+    @validator("collections")
+    def validate_class_path(cls, value):
+        for path in value:
+            try:
+                module_name, class_name = path.rsplit(".", 1)
+                module = import_module(module_name)
+                _ = getattr(module, class_name)
+            except (ValueError, ImportError, AttributeError):
+                raise ValueError(f"Invalid class path: {path}")
+        return value
