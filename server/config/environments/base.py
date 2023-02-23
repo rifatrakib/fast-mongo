@@ -1,4 +1,6 @@
-from pydantic import BaseSettings, FilePath
+from typing import Union
+
+from pydantic import BaseSettings, EmailStr, HttpUrl
 
 
 class BaseConfig(BaseSettings):
@@ -7,7 +9,6 @@ class BaseConfig(BaseSettings):
 
     # database configuration variables
     MONGODB_URI: str
-    MONGO_MAPPER_PATH: FilePath
 
     # hash generation variables
     HASH_SALT: str
@@ -22,6 +23,21 @@ class BaseConfig(BaseSettings):
     JWT_MIN: int
     JWT_HOUR: int
     JWT_DAY: int
+
+    # mail server config
+    MAIL_USERNAME: Union[EmailStr, str]
+    MAIL_PASSWORD: str
+    MAIL_FROM: EmailStr
+    MAIL_PORT: int
+    MAIL_SERVER: str
+    MAIL_FROM_NAME: str
+    MAIL_STARTTLS: bool
+    MAIL_SSL_TLS: bool
+    USE_CREDENTIALS: bool
+
+    # random generator config
+    RANDOM_BYTE_LENGTH: int
+    ACTIVATION_URL: HttpUrl
 
     class Config:
         env_file = ".env"

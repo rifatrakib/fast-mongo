@@ -21,6 +21,7 @@ beanie = "^1.17.0"
 python-jose = {extras = ["cryptography"], version = "^3.3.0"}
 passlib = {extras = ["bcrypt"], version = "^1.7.4"}
 argon2-cffi = "^21.3.0"
+fastapi-mail = "^1.2.5"
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.0.4"
