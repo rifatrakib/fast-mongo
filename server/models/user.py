@@ -69,7 +69,7 @@ class User(Document, UserBase):
         self.updated_at = datetime.utcnow()
 
 
-class UserRequest(BaseRequest, UserBase):
+class UserSignupRequest(BaseRequest, UserBase):
     password: str = Field(
         title="password",
         decription="""
