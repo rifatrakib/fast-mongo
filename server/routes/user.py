@@ -1,12 +1,5 @@
 from fastapi import APIRouter
 
-from server.database.user import create_new_user
-from server.models.user import UserRequest, UserResponse
+from server.services.validators import Tags
 
-router = APIRouter(prefix="/users")
-
-
-@router.post("", response_model=UserResponse)
-async def create_user(user: UserRequest):
-    created_user = await create_new_user(user)
-    return created_user
+router = APIRouter(prefix="/users", tags=[Tags.users])
