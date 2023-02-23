@@ -14,6 +14,7 @@ def database_collection_mapper() -> MapperSchema:
             "name": "enigma",
             "collections": [
                 "server.models.user.User",
+                "server.models.user.Activation",
             ],
         },
     ]
@@ -24,7 +25,7 @@ def database_collection_mapper() -> MapperSchema:
 async def create_database_clients():
     client = AsyncIOMotorClient(settings.MONGODB_URI)
     mapper = database_collection_mapper()
-    for database in mapper.databases:
+    for database in mapper:
         await init_beanie(
             database=client[database.name],
             document_models=database.collections,

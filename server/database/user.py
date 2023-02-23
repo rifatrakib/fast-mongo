@@ -1,4 +1,6 @@
-from server.models.user import User, UserSignupRequest
+from pydantic import EmailStr
+
+from server.models.user import Activation, User, UserSignupRequest
 from server.security.password import password_manager
 
 
@@ -14,3 +16,12 @@ async def create_new_user(user: UserSignupRequest) -> User:
     )
     created_user = await new_user.insert()
     return created_user
+
+
+async def create_new_user_activation(username: str, email: EmailStr) -> Activation:
+    activation_record = Activation(
+        username=username,
+        email=email,
+    )
+    new_record = await activation_record.insert()
+    return new_record
