@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Union
 
 from beanie import Document, Insert, Update, before_event
@@ -45,13 +45,13 @@ class User(Document, UserBase):
     )
     created_at: datetime = Field(
         default_factory=datetime.utcnow,
-        title="verification status",
-        decription="Whether user is verified, determined via phone number verification.",
+        title="time of insert",
+        decription="Exact time when the user information was first saved.",
     )
     updated_at: Union[datetime, None] = Field(
         default=None,
-        title="verification status",
-        decription="Whether user is verified, determined via phone number verification.",
+        title="time of last update",
+        decription="Exact time when the user information was last updated.",
     )
 
     class Settings:
@@ -94,3 +94,21 @@ class UserResponse(BaseResponse, UserBase):
         title="verification status",
         decription="Whether user is verified, determined via phone number verification.",
     )
+
+
+class Activation(Document, UserBase):
+    created_at: datetime = Field(
+        default_factory=datetime.utcnow,
+        title="time of insert",
+        decription="Exact time when the user information was first saved.",
+    )
+
+    class Settings:
+        name = "user_activations"
+        indexes = ["username", "email", "created_at"]
+
+    @before_event(Insert)
+    async def clear_expired(self):
+        """remove any expired document before inserting any new document."""
+        threshold = datetime.utcnow() - timedelta(minutes=5)
+        await self.find({"created_at": {"$lt": threshold}}).delete()
