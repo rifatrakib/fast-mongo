@@ -1,6 +1,6 @@
 from datetime import datetime
 from importlib import import_module
-from typing import Any, List
+from typing import Any, List, Union
 
 from pydantic import BaseModel, Extra, validator
 
@@ -49,3 +49,9 @@ class MapperSchema(BaseModel):
             except (ValueError, ImportError, AttributeError):
                 raise ValueError(f"Invalid class path: {path}")
         return value
+
+
+class MessageResponseSchema(BaseAPI):
+    loc: Union[List[str], None] = None
+    msg: str
+    type: Union[str, None] = None
