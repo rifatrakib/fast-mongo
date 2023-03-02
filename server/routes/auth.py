@@ -36,5 +36,5 @@ async def activation_key(activation_key: str):
         username = await verify_user_activation(activation_key)
         await activate_user(username)
     except EntityDoesNotExist:
-        raise await http_exc_404_key_expired()
+        await http_exc_404_key_expired()
     return MessageResponseSchema(msg="Your account has been activated")
