@@ -55,3 +55,9 @@ class MessageResponseSchema(BaseAPI):
     loc: Union[List[str], None] = None
     msg: str
     type: Union[str, None] = None
+
+
+class HealthResponse(BaseAPI):
+    APP_NAME: str
+    MODE: str
+    DEBUG: bool
