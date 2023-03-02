@@ -5,17 +5,21 @@ from pydantic import EmailStr
 
 from server.models.user import Activation, User, UserSignupRequest
 from server.security.password import password_manager
-from server.services.exceptions import EntityDoesNotExist
+from server.services.exceptions import EntityAlreadyExists, EntityDoesNotExist
 
 
 async def is_username_available(username: str) -> bool:
     user = await User.find(User.username == username).first_or_none()
-    return False if user else True
+    if user:
+        raise EntityAlreadyExists(f"username {username} has already been taken!")
+    return True
 
 
 async def is_email_available(email: EmailStr) -> bool:
     user = await User.find(User.email == email).first_or_none()
-    return False if user else True
+    if user:
+        raise EntityAlreadyExists(f"email {email} has already been used!")
+    return True
 
 
 async def create_new_user(user: UserSignupRequest) -> User:
@@ -26,7 +30,7 @@ async def create_new_user(user: UserSignupRequest) -> User:
         hashed_password=password_manager.generate_hashed_password(
             hash_salt=hash_salt,
             password=user.password,
-        )
+        ),
     )
     created_user = await new_user.insert()
     return created_user
