@@ -5,7 +5,7 @@ from pydantic import EmailStr
 
 from server.models.user import Activation, User
 from server.security.password import password_manager
-from server.services.exceptions import EntityAlreadyExists, EntityDoesNotExist
+from server.services.exceptions import EntityAlreadyExists, EntityDoesNotExist, PasswordDoesNotMatch, UserNotActive
 
 
 async def is_username_available(username: str) -> bool:
@@ -35,6 +35,25 @@ async def create_new_user(username: str, email: EmailStr, password: str) -> User
     )
     created_user = await new_user.insert()
     return created_user
+
+
+async def authenticate_user(username: str, password: str) -> User:
+    user = await User.find(User.username == username).first_or_none()
+
+    if not user:
+        raise EntityDoesNotExist("No such user exists!")
+
+    if not user.is_active:
+        raise UserNotActive("Account is not active! please activate through email.")
+
+    if not password_manager.verify_password(
+        hash_salt=user.hash_salt,
+        password=password,
+        hashed_password=user.hashed_password,
+    ):
+        raise PasswordDoesNotMatch("wrong username or password!")
+
+    return user
 
 
 async def activate_user(username: str) -> bool:
