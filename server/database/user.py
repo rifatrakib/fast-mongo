@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from bson.objectid import ObjectId
 from pydantic import EmailStr
 
-from server.models.user import Activation, User, UserSignupRequest
+from server.models.user import Activation, User
 from server.security.password import password_manager
 from server.services.exceptions import EntityAlreadyExists, EntityDoesNotExist
 
@@ -22,14 +22,15 @@ async def is_email_available(email: EmailStr) -> bool:
     return True
 
 
-async def create_new_user(user: UserSignupRequest) -> User:
+async def create_new_user(username: str, email: EmailStr, password: str) -> User:
     hash_salt = password_manager.generate_salt
     new_user = User(
-        **user.dict(),
+        username=username,
+        email=email,
         hash_salt=hash_salt,
         hashed_password=password_manager.generate_hashed_password(
             hash_salt=hash_salt,
-            password=user.password,
+            password=password,
         ),
     )
     created_user = await new_user.insert()
