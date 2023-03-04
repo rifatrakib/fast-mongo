@@ -1,8 +1,9 @@
-from fastapi import APIRouter, BackgroundTasks, Request, status
+from fastapi import APIRouter, BackgroundTasks, Depends, Request, status
+from pydantic import EmailStr
 
 from server.database.user import activate_user, create_new_user, verify_user_activation
 from server.models.base import MessageResponseSchema
-from server.models.user import UserSignupRequest
+from server.security.dependencies import signup_email_field, signup_password_field, signup_username_field
 from server.services.email import send_email
 from server.services.exceptions import EntityDoesNotExist
 from server.services.messages import http_exc_404_key_expired
@@ -18,8 +19,14 @@ router = APIRouter(prefix="/auth", tags=[Tags.authentication])
     response_model=MessageResponseSchema,
     status_code=status.HTTP_201_CREATED,
 )
-async def create_user(request: Request, user: UserSignupRequest, task: BackgroundTasks):
-    created_user = await create_new_user(user)
+async def create_user(
+    request: Request,
+    task: BackgroundTasks,
+    username: str = Depends(signup_username_field),
+    email: EmailStr = Depends(signup_email_field),
+    password: str = Depends(signup_password_field),
+):
+    created_user = await create_new_user(username=username, email=email, password=password)
     task.add_task(send_email, request=request, user=created_user)
     return MessageResponseSchema(msg="Confirm your email to activate your account")
 
