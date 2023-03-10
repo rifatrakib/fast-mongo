@@ -1,9 +1,57 @@
 from fastapi import Depends, Form
+from fastapi.security import OAuth2PasswordBearer
 from pydantic import EmailStr
 
-from server.database.user import is_email_available, is_username_available
-from server.services.exceptions import EntityAlreadyExists
-from server.services.messages import http_exc_409_conflict, http_exc_412_password_mismatch
+from server.database.user import is_email_available, is_username_available, read_user_by_username
+from server.models.token import JWTData
+from server.models.user import User
+from server.security.token import jwt_engine
+from server.services.exceptions import EntityAlreadyExists, EntityDoesNotExist
+from server.services.messages import (
+    http_exc_401_inactive_user,
+    http_exc_401_unverified_user,
+    http_exc_403_credentials_exception,
+    http_exc_409_conflict,
+    http_exc_412_password_mismatch,
+)
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/signin")
+
+
+async def decode_access_token(
+    token: str = Depends(oauth2_scheme),
+):
+    try:
+        user_data: JWTData = jwt_engine.retrieve_token_details(token)
+    except ValueError:
+        await http_exc_403_credentials_exception()
+    return user_data
+
+
+async def get_current_user(
+    user_data: JWTData = Depends(decode_access_token),
+):
+    try:
+        user = await read_user_by_username(username=user_data.username)
+    except EntityDoesNotExist:
+        await http_exc_403_credentials_exception()
+    return user
+
+
+async def get_current_active_user(
+    user: User = Depends(get_current_user),
+):
+    if not user.is_active:
+        await http_exc_401_inactive_user()
+    return user
+
+
+async def get_current_verified_user(
+    user: User = Depends(get_current_user),
+):
+    if not user.is_verified:
+        await http_exc_401_unverified_user()
+    return user
 
 
 async def signup_username_field(
