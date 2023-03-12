@@ -3,8 +3,8 @@ from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import EmailStr
 
 from server.database.user import activate_user, authenticate_user, create_new_user, verify_user_activation
-from server.models.base import MessageResponseSchema
-from server.models.token import TokenResponseSchema
+from server.models.helpers.base import MessageResponseSchema
+from server.models.response.user import TokenResponseSchema
 from server.security.dependencies import signup_email_field, signup_password_field, signup_username_field
 from server.security.token import jwt_engine
 from server.services.email import send_email

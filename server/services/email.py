@@ -4,7 +4,7 @@ from fastapi_mail import ConnectionConfig, FastMail, MessageSchema, MessageType
 
 from server.config.factory import settings
 from server.database.user import create_new_user_activation
-from server.models.user import User
+from server.models.database.user import User
 
 templates = Jinja2Templates(directory="server/templates")
 

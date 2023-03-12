@@ -3,8 +3,8 @@ from fastapi.security import OAuth2PasswordBearer
 from pydantic import EmailStr
 
 from server.database.user import is_email_available, is_username_available, read_user_by_username
-from server.models.token import JWTData
-from server.models.user import User
+from server.models.database.user import User
+from server.models.helpers.token import JWTData
 from server.security.token import jwt_engine
 from server.services.exceptions import EntityAlreadyExists, EntityDoesNotExist
 from server.services.messages import (

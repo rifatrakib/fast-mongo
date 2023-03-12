@@ -5,7 +5,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import parse_obj_as
 
 from server.config.factory import settings
-from server.models.base import MapperSchema
+from server.models.helpers.base import MapperSchema
 
 
 def database_collection_mapper() -> MapperSchema:
@@ -13,8 +13,8 @@ def database_collection_mapper() -> MapperSchema:
         {
             "name": "enigma",
             "collections": [
-                "server.models.user.User",
-                "server.models.user.Activation",
+                "server.models.database.user.User",
+                "server.models.database.user.Activation",
             ],
         },
     ]

@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from bson.objectid import ObjectId
 from pydantic import EmailStr
 
-from server.models.user import Activation, User
+from server.models.database.user import Activation, User
 from server.security.password import password_manager
 from server.services.exceptions import EntityAlreadyExists, EntityDoesNotExist, PasswordDoesNotMatch, UserNotActive
 

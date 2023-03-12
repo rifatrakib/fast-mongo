@@ -5,8 +5,8 @@ from jose import JWTError, jwt
 from pydantic import ValidationError
 
 from server.config.factory import settings
-from server.models.token import JWTData, JWToken
-from server.models.user import User
+from server.models.database.user import User
+from server.models.helpers.token import JWTData, JWToken
 from server.services.exceptions import EntityDoesNotExist
 
 
