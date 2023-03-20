@@ -16,9 +16,14 @@ class BaseDocument(BaseModel):
         json_encoders: dict = {datetime: format_datetime_into_isoformat}
 
 
-class BaseAPI(BaseModel):
+class BaseTokenAPI(BaseModel):
     class Config:
         allow_population_by_field_name: bool = True
+
+
+class BaseAPI(BaseTokenAPI):
+    class Config:
+        orm_mode: bool = True
         alias_generator: Any = format_dict_key_to_camel_case
 
 
