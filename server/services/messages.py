@@ -37,6 +37,13 @@ async def http_exc_404_key_expired() -> Exception:
     )
 
 
+async def http_exc_404_not_found() -> Exception:
+    return HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail={"msg": "Requested resource does not exist!"},
+    )
+
+
 async def http_exc_409_conflict(message: str) -> Exception:
     raise HTTPException(
         status_code=status.HTTP_409_CONFLICT,
