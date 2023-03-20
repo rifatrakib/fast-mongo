@@ -1,6 +1,6 @@
 from pydantic import Field
 
-from server.models.helpers.base import BaseAPI, BaseResponse
+from server.models.helpers.base import BaseResponse, BaseTokenAPI
 from server.models.helpers.user import UserBase
 
 
@@ -17,6 +17,6 @@ class UserResponse(BaseResponse, UserBase):
     )
 
 
-class TokenResponseSchema(BaseAPI):
+class TokenResponseSchema(BaseTokenAPI):
     token_type: str
     access_token: str
