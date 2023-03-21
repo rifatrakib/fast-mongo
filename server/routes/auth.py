@@ -1,15 +1,31 @@
-from fastapi import APIRouter, BackgroundTasks, Depends, Request, status
+from fastapi import APIRouter, BackgroundTasks, Depends, Path, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import EmailStr
 
-from server.database.user import activate_user, authenticate_user, create_new_user, verify_user_activation
+from server.database.user import (
+    activate_user,
+    authenticate_user,
+    create_new_user,
+    read_user_by_id,
+    verify_user_activation,
+)
 from server.models.helpers.base import MessageResponseSchema
-from server.models.response.user import TokenResponseSchema
-from server.security.dependencies import signup_email_field, signup_password_field, signup_username_field
+from server.models.response.user import TokenResponseSchema, UserResponse
+from server.security.dependencies import (
+    get_current_active_user,
+    signup_email_field,
+    signup_password_field,
+    signup_username_field,
+)
 from server.security.token import jwt_engine
 from server.services.email import send_email
 from server.services.exceptions import EntityDoesNotExist, PasswordDoesNotMatch, UserNotActive
-from server.services.messages import http_exc_400_credentials_bad_signin_request, http_exc_401_inactive_user, http_exc_404_key_expired
+from server.services.messages import (
+    http_exc_400_credentials_bad_signin_request,
+    http_exc_401_inactive_user,
+    http_exc_404_key_expired,
+    http_exc_404_not_found,
+)
 from server.services.validators import Tags
 
 router = APIRouter(prefix="/auth", tags=[Tags.authentication])
@@ -72,3 +88,30 @@ async def activation_key(activation_key: str):
     except EntityDoesNotExist:
         await http_exc_404_key_expired()
     return MessageResponseSchema(msg="Your account has been activated")
+
+
+@router.get(
+    "/users/{user_id}",
+    name="user:info",
+    summary="Fetch information about an active or non active user",
+    response_model=UserResponse,
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(get_current_active_user)],
+)
+async def read_user(
+    user_id: str = Path(
+        title="user ID",
+        decription="Unique ID that can be used to distinguish between users.",
+    ),
+):
+    try:
+        user = await read_user_by_id(user_id)
+        return {
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+            "is_active": user.is_active,
+            "is_verified": user.is_verified,
+        }
+    except EntityDoesNotExist:
+        raise await http_exc_404_not_found()
