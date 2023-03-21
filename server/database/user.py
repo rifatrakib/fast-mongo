@@ -8,6 +8,13 @@ from server.security.password import password_manager
 from server.services.exceptions import EntityAlreadyExists, EntityDoesNotExist, PasswordDoesNotMatch, UserNotActive
 
 
+async def read_user_by_id(id: str) -> User:
+    user = await User.find(User.id == ObjectId(id)).first_or_none()
+    if not user:
+        raise EntityDoesNotExist("No such user exists!")
+    return user
+
+
 async def read_user_by_username(username: str) -> User:
     user = await User.find(User.username == username).first_or_none()
     if not user:
@@ -16,7 +23,9 @@ async def read_user_by_username(username: str) -> User:
 
 
 async def is_username_available(username: str) -> bool:
-    await read_user_by_username(username=username)
+    user = await User.find(User.username == username).first_or_none()
+    if user:
+        raise EntityAlreadyExists(f"username {username} has already been used!")
     return True
 
 
