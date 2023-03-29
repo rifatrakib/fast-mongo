@@ -2,21 +2,10 @@ from fastapi import APIRouter, BackgroundTasks, Depends, Path, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import EmailStr
 
-from server.database.user import (
-    activate_user,
-    authenticate_user,
-    create_new_user,
-    read_user_by_id,
-    verify_user_activation,
-)
+from server.database.user import activate_user, authenticate_user, create_new_user, read_user_by_id, verify_user_activation
 from server.models.helpers.base import MessageResponseSchema
 from server.models.response.user import TokenResponseSchema, UserResponse
-from server.security.dependencies import (
-    get_current_active_user,
-    signup_email_field,
-    signup_password_field,
-    signup_username_field,
-)
+from server.security.dependencies import get_current_active_user, new_password_form, signup_email_field, signup_username_field
 from server.security.token import jwt_engine
 from server.services.email import send_email
 from server.services.exceptions import EntityDoesNotExist, PasswordDoesNotMatch, UserNotActive
@@ -43,7 +32,7 @@ async def create_user(
     task: BackgroundTasks,
     username: str = Depends(signup_username_field),
     email: EmailStr = Depends(signup_email_field),
-    password: str = Depends(signup_password_field),
+    password: str = Depends(new_password_form),
 ):
     created_user = await create_new_user(username=username, email=email, password=password)
     task.add_task(send_email, request=request, user=created_user)
@@ -91,7 +80,7 @@ async def activation_key(activation_key: str):
 
 
 @router.get(
-    "/users/{user_id}",
+    "/accounts/{user_id}",
     name="user:info",
     summary="Fetch information about an active or non active user",
     response_model=UserResponse,
@@ -106,12 +95,6 @@ async def read_user(
 ):
     try:
         user = await read_user_by_id(user_id)
-        return {
-            "id": user.id,
-            "username": user.username,
-            "email": user.email,
-            "is_active": user.is_active,
-            "is_verified": user.is_verified,
-        }
+        return user.dict()
     except EntityDoesNotExist:
         raise await http_exc_404_not_found()
