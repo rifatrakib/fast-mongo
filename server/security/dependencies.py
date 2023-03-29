@@ -86,10 +86,27 @@ async def signup_email_field(
     return email
 
 
-async def password_form_field(
-    password: str = Form(
+def password_form_field(
+    current_password: str = Form(
+        alias="currentPassword",
+        title="current password",
+        decription="""
+            Password containing at least 1 uppercase letter, 1 lowercase letter,
+            1 number, 1 character that is neither letter nor number, and
+            between 8 to 32 characters.
+        """,
+        regex=r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,64}$",
+        min_length=8,
+        max_length=64,
+    ),
+):
+    return current_password
+
+
+async def new_password_form(
+    new_password: str = Form(
         title="Password",
-        alias="password",
+        alias="newPassword",
         description="""
             Password containing at least 1 uppercase letter, 1 lowercase letter,
             1 number, 1 character that is neither letter nor number, and
@@ -105,10 +122,6 @@ async def password_form_field(
         description="Repeat the same password.",
     ),
 ):
-    if password != repeat_password:
+    if new_password != repeat_password:
         await http_exc_412_password_mismatch()
-    return password
-
-
-def signup_password_field(password: str = Depends(password_form_field)):
-    return password
+    return new_password
