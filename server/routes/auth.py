@@ -2,10 +2,22 @@ from fastapi import APIRouter, BackgroundTasks, Depends, Path, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import EmailStr
 
-from server.database.user import activate_user, authenticate_user, create_new_user, read_user_by_id, verify_user_activation
+from server.database.user import (
+    activate_user,
+    authenticate_user,
+    create_new_user,
+    read_user_by_id,
+    verify_user_activation,
+)
+from server.models.database.user import User
 from server.models.helpers.base import MessageResponseSchema
 from server.models.response.user import TokenResponseSchema, UserResponse
-from server.security.dependencies import get_current_active_user, new_password_form, signup_email_field, signup_username_field
+from server.security.dependencies import (
+    get_current_active_user,
+    signup_email_field,
+    new_password_form,
+    signup_username_field,
+)
 from server.security.token import jwt_engine
 from server.services.email import send_email
 from server.services.exceptions import EntityDoesNotExist, PasswordDoesNotMatch, UserNotActive
@@ -77,6 +89,17 @@ async def activation_key(activation_key: str):
     except EntityDoesNotExist:
         await http_exc_404_key_expired()
     return MessageResponseSchema(msg="Your account has been activated")
+
+
+@router.get(
+    "/accounts/me",
+    name="user:info",
+    summary="Fetch information about current user",
+    response_model=UserResponse,
+    status_code=status.HTTP_200_OK,
+)
+async def read_current_user(user: User = Depends(get_current_active_user)):
+    return user.dict()
 
 
 @router.get(
