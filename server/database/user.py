@@ -94,3 +94,32 @@ async def verify_user_activation(activation_key: str) -> str:
     username = stored_record.username
     await stored_record.delete()
     return username
+
+
+async def update_password(
+    user_id: int,
+    current_password: str,
+    new_password: str,
+):
+    user = await read_user_by_id(user_id)
+
+    if not password_manager.verify_password(
+        hash_salt=user.hash_salt,
+        password=current_password,
+        hashed_password=user.hashed_password,
+    ):
+        raise PasswordDoesNotMatch("wrong username or password!")
+
+    hash_salt = password_manager.generate_salt
+    await user.set(
+        {
+            User.hash_salt: hash_salt,
+            User.hashed_password: password_manager.generate_hashed_password(
+                hash_salt=hash_salt,
+                password=new_password,
+            ),
+            User.updated_at: datetime.utcnow(),
+        }
+    )
+
+    return True
