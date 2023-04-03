@@ -2,20 +2,15 @@ from fastapi import APIRouter, BackgroundTasks, Depends, Path, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import EmailStr
 
-from server.database.user import (
-    activate_user,
-    authenticate_user,
-    create_new_user,
-    read_user_by_id,
-    verify_user_activation,
-)
+from server.database.user import activate_user, authenticate_user, create_new_user, read_user_by_id, update_password, verify_user_activation
 from server.models.database.user import User
 from server.models.helpers.base import MessageResponseSchema
 from server.models.response.user import TokenResponseSchema, UserResponse
 from server.security.dependencies import (
     get_current_active_user,
-    signup_email_field,
     new_password_form,
+    password_form_field,
+    signup_email_field,
     signup_username_field,
 )
 from server.security.token import jwt_engine
@@ -24,6 +19,7 @@ from server.services.exceptions import EntityDoesNotExist, PasswordDoesNotMatch,
 from server.services.messages import (
     http_exc_400_credentials_bad_signin_request,
     http_exc_401_inactive_user,
+    http_exc_401_not_authorized,
     http_exc_404_key_expired,
     http_exc_404_not_found,
 )
@@ -121,3 +117,28 @@ async def read_user(
         return user.dict()
     except EntityDoesNotExist:
         raise await http_exc_404_not_found()
+
+
+@router.patch(
+    "/password/update",
+    name="account:password-update",
+    summary="Update password of the current active user",
+    response_model=MessageResponseSchema,
+    status_code=status.HTTP_200_OK,
+)
+async def update_user_password(
+    current_password: str = Depends(password_form_field),
+    new_password: str = Depends(new_password_form),
+    current_user: User = Depends(get_current_active_user),
+):
+    try:
+        await update_password(
+            user_id=current_user.id,
+            current_password=current_password,
+            new_password=new_password,
+        )
+        return MessageResponseSchema(msg="Password updated successfully!")
+    except EntityDoesNotExist:
+        raise await http_exc_404_not_found()
+    except PasswordDoesNotMatch:
+        raise await http_exc_401_not_authorized(problem="password")
