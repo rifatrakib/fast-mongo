@@ -8,6 +8,13 @@ async def http_exc_400_credentials_bad_signin_request() -> Exception:
     )
 
 
+async def http_exc_401_not_authorized(problem: str) -> Exception:
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail={"msg": f"Wrong {problem} provided."},
+    )
+
+
 async def http_exc_401_inactive_user() -> Exception:
     raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
